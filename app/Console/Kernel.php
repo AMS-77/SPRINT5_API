@@ -4,9 +4,11 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends ConsoleKernel
 {
+    protected $middleware = [\Laravel\Passport\Http\Middleware\CreateFreshApiToken::class,];
     /**
      * Define the application's command schedule.
      */
