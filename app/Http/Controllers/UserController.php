@@ -38,6 +38,7 @@ class UserController extends Controller
     el token de acceso temporal.*/
     return response([ 'user' => $user, 'access_token' => $accessToken]);
     }
+    
 
     //Esta función "login" trabaja el inicio de sesión del usuario.
     public function login(Request $request)
