@@ -6,7 +6,7 @@ use App\Models\Game;
 use App\Models\User;
 use Illuminate\Http\Request;
 
-class GamesController extends Controller
+class GameController extends Controller
 {
     //Un jugador tirará los dados
     public function playerRollsDice(Request $request, $id)
