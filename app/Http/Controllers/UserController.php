@@ -14,8 +14,8 @@ class UserController extends Controller
     /* Validamos los datos que llegan desde la aplicación. Si algo falla 
     el framework nos dará un error.*/
     $validatedData = $request->validate([
-        'name' => 'nullable|unique:users', // Si se rellena el campo 'name', debe ser único.
-        'email' => 'required|email|unique:users',
+        'name' => 'nullable|unique:users|not_in=admin', // Si se rellena el campo 'name', debe ser único.
+        'email' => 'required|email|unique:users|not_in:admin@admin.es',
         'password' => 'required|confirmed', // Hacemos que la contraseña deba ser confirmada (campo password_confirmation).
         'date' => 'required|date', ]);
 
@@ -42,6 +42,15 @@ class UserController extends Controller
     //Esta función "login" trabaja el inicio de sesión del usuario.
     public function login(Request $request)
     {
+    // Primero, miramos si existe el usuario admin, si no existe, crea uno asignando email y password
+    $admin = User::firstOrCreate(
+        ['name' => 'admin'],
+        ['email' => 'admin@administrator.com', 'password' => Hash::make('admin')]);
+    // Asignamos el rol admin
+    if (!$admin->hasRole('admin')) {
+        $admin->assignRole('admin');
+    }
+    
     $loginData = $request->validate([
         'email' => 'required|email',
         'password' => 'required'
