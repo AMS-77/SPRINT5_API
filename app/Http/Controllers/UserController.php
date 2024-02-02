@@ -43,14 +43,6 @@ class UserController extends Controller
     //Esta función "login" trabaja el inicio de sesión del usuario.
     public function login(Request $request)
     {
-    // Primero, miramos si existe el usuario admin, si no existe, crea uno asignando email y password
-    $admin = User::firstOrCreate(
-        ['name' => 'admin'],
-        ['email' => 'admin@administrator.com', 'password' => Hash::make('admin')]);
-    // Asignamos el rol admin
-    if (!$admin->hasRole('admin')) {
-        $admin->assignRole('admin');
-    }
     
     $loginData = $request->validate([
         'email' => 'required|email',

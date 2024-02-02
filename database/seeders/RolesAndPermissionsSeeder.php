@@ -16,25 +16,33 @@ class RolesAndPermissionsSeeder extends Seeder
     public function run(): void
     {
         // Creamos los roles
-        $roleAdmin = Role::create(['name' => 'admin', 'guard_name' => 'api']);
-        $rolePlayer = Role::create(['name' => 'player', 'guard_name' => 'api']);
+        $roleAdmin = Role::firstOrcreate(['name' => 'admin', 'guard_name' => 'api']);
+        $rolePlayer = Role::firstOrcreate(['name' => 'player', 'guard_name' => 'api']);
 
-        // Creamos el único usuario administrador de la aplicación
-        User::create([
-            'name' => 'admin',
-            'email' => 'admin@admin.com',
-            'password' => bcrypt('admin')
-        ])->assignRole('admin'); 
+        // Creamos el único usuario administrador de la aplicación si no existe
+        $admin = User::where('name', 'admin')->first();
+
+        if (!$admin) {
+            $admin = User::firstOrCreate([
+                'email' => 'admin@admin.com',
+            ], [
+                'name' => 'admin',
+                'password' => bcrypt('admin'),
+                'date' => now()
+            ]);
+        }
+
+        $admin->assignRole($roleAdmin);
 
         // Creamos permisos y se asignan sus roles
-        Permission::create(['name' => 'players.playersExitPercentage', 'guard_name' => 'api'])->syncRoles([$roleAdmin]);
-        Permission::create(['name' => 'players.playersRanking', 'guard_name' => 'api'])->syncRoles([$roleAdmin]);
-        Permission::create(['name' => 'players.lastPlayer', 'guard_name' => 'api'])->syncRoles([$roleAdmin]);
-        Permission::create(['name' => 'players.firstPlayer', 'guard_name' => 'api'])->syncRoles([$roleAdmin]);
+        Permission::firstOrCreate(['name' => 'players.playersExitPercentage', 'guard_name' => 'api'])->syncRoles([$roleAdmin]);
+        Permission::firstOrCreate(['name' => 'players.playersRanking', 'guard_name' => 'api'])->syncRoles([$roleAdmin]);
+        Permission::firstOrCreate(['name' => 'players.lastPlayer', 'guard_name' => 'api'])->syncRoles([$roleAdmin]);
+        Permission::firstOrCreate(['name' => 'players.firstPlayer', 'guard_name' => 'api'])->syncRoles([$roleAdmin]);
 
-        Permission::create(['name' => 'players.update', 'guard_name' => 'api'])->syncRoles([$rolePlayer]);
-        Permission::create(['name' => 'games.EliminatePlayerRolls', 'guard_name' => 'api'])->syncRoles([$rolePlayer]);
-        Permission::create(['name' => 'games.playerRollsDice', 'guard_name' => 'api'])->syncRoles([$rolePlayer]);
-        Permission::create(['name' => 'games.listPlaysPlayer', 'guard_name' => 'api'])->syncRoles([$rolePlayer]);
+        Permission::firstOrCreate(['name' => 'players.update', 'guard_name' => 'api'])->syncRoles([$rolePlayer]);
+        Permission::firstOrCreate(['name' => 'games.EliminatePlayerRolls', 'guard_name' => 'api'])->syncRoles([$rolePlayer]);
+        Permission::firstOrCreate(['name' => 'games.playerRollsDice', 'guard_name' => 'api'])->syncRoles([$rolePlayer]);
+        Permission::firstOrCreate(['name' => 'games.listPlaysPlayer', 'guard_name' => 'api'])->syncRoles([$rolePlayer]);
     }
 }
