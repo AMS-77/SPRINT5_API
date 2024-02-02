@@ -9,14 +9,19 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    public function test(){
+        return response()->json([
+            'message' => 'Funcionando'
+        ],200);
+    }
     public function register(Request $request)
     {
     /* Validamos los datos que llegan desde la aplicación. Si algo falla 
     el framework nos dará un error.*/
     $validatedData = $request->validate([
-        'name' => 'nullable|unique:users|not_in=admin', // Si se rellena el campo 'name', debe ser único.
-        'email' => 'required|email|unique:users|not_in:admin@admin.es',
-        'password' => 'required|confirmed', // Hacemos que la contraseña deba ser confirmada (campo password_confirmation).
+        'name' => 'nullable|unique:users', // Si se rellena el campo 'name', debe ser único.
+        'email' => 'required|email|unique:users',
+        'password' => 'required', // Hacemos que la contraseña deba ser confirmada (campo password_confirmation).
         'date' => 'required|date', ]);
 
     // Si el usuario no ha rellenado el nombre, por defecto será 'Anónimo'.
@@ -41,7 +46,7 @@ class UserController extends Controller
     
 
     //Esta función "login" trabaja el inicio de sesión del usuario.
-    public function login(Request $request)
+    /*public function login(Request $request)
     {
     
     $loginData = $request->validate([
@@ -58,7 +63,26 @@ class UserController extends Controller
         //$token = $user->createToken('authToken')->accessToken;
 
         return response(['user' => $user, 'access_token' => $token]);
-    } 
+    } */
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required']);
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'message' => 'Invalid credentials'], 422);
+        }
+        $token = $user->createToken('authToken')->accessToken;
+        return response([
+            'message' => 'User ' . ucfirst($user->name) . ' logged successfully',
+            'token' => $token,
+            'user' => $user
+        ]);
+    }
 
     public function logout(Request $request)
     {
@@ -71,8 +95,12 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
+
+    $current_user = Auth::user()->id; // Obtenemos el usuario actual._
+
     // Buscamos al usuario en la base de datos, haciendo la petición al Modelo
     $user = User::find($id);
+
 
     // Si no existe, devolvemos  error
     if (!$user) {
@@ -84,12 +112,17 @@ class UserController extends Controller
         'name' => 'required|unique:users|max:25',
     ]);
 
-    // Actualizamos
-    $user->name = $validatedData['name'];
-    $user->save();
+    if($current_user == $id) {
 
-    // Devolvemos una confirmación de que se ha actualizado
-    return response(['message' => 'Name updated', 'user' => $user]);
+        // Actualizamos
+        $user->name = $validatedData['name'];
+        $user->save();
+        // Devolvemos una confirmación de que se ha actualizado
+        return response(['message' => 'Name updated', 'user' => $user]);
+    }else{
+        return response(['message' => 'user not Unauthorized'], 401);
+    }   
+    
     }
 
 
