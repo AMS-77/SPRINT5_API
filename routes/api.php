@@ -18,11 +18,13 @@ use App\Http\Controllers\GameController;
 */
 /*Referenciamos las rutas con ->name(...) por si algun dia cambiasen las urls
 y asi solo las deberíamos cambiar aquí */
+Route::get('/test', [UserController::class, 'test'])->name('test');
 Route::post('/players', [UserController::class, 'register'])->name('register');
 Route::post('/login', [UserController::class, 'login'])->name('login');
 
-Route::middleware('auth:api')->group(function () {   //Laravel/Passport
 
+
+Route::middleware('auth:api')->group(function () {   //Laravel/Passport
     Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 
     Route::middleware('role:admin')->group(function () {   //Spatie/Permissions
