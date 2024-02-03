@@ -44,27 +44,6 @@ class UserController extends Controller
     return response([ 'user' => $user, 'access_token' => $accessToken]);
     }
     
-
-    //Esta función "login" trabaja el inicio de sesión del usuario.
-    /*public function login(Request $request)
-    {
-    
-    $loginData = $request->validate([
-        'email' => 'required|email',
-        'password' => 'required'
-    ]);
-
-        if (!Auth::attempt($loginData)) {
-            return response(['message' => 'Invalid credentials']);
-        }
-        $user = Auth::user();
-        $token = $request->user()->createToken('token')->plainTextToken;
-        //$user = auth()->user();
-        //$token = $user->createToken('authToken')->accessToken;
-
-        return response(['user' => $user, 'access_token' => $token]);
-    } */
-
     public function login(Request $request)
     {
         $request->validate([
@@ -121,9 +100,16 @@ class UserController extends Controller
         return response(['message' => 'Name updated', 'user' => $user]);
     }else{
         return response(['message' => 'user not Unauthorized'], 401);
-    }   
+    } 
+    }  
     
+    public function playersExitPercentage()
+    {
+        // Devolvemos un aviso de que se ha cerrado la sesión.
+        return response(['message' => 'solo el admin accede aqui, es correcto']);
     }
+    
+
 
 
 }
