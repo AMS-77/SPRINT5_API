@@ -3,7 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-
+use App\Models\Game;
+use App\Observers\GameObserver;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -19,6 +20,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Game::observe(GameObserver::class);
     }
 }

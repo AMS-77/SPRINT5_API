@@ -22,7 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'date'
+        'date',
     ];
 
     /**
@@ -30,6 +30,7 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+    //Campos sensibles que se marcan como ocultos que no se incluyen en las respuestas JSON
     protected $hidden = [
         'password',
         'remember_token',
@@ -55,5 +56,14 @@ class User extends Authenticatable
     public function games()
     {
         return $this->hasMany(Game::class);
+    }
+
+    //Método que va actualizando el campo percentage_won mediante un Observer (GameObserver)
+    public function calculatePercentageWon()
+    {
+        $totalGames = $this->games()->count(); 
+        $winGames = $this->games()->where('game_won', true)->count();
+        $this->percentage_won = ($winGames / $totalGames) * 100;
+        $this->save();
     }
 }
