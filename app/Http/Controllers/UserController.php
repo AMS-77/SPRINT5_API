@@ -9,12 +9,6 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function test(){
-        return response()->json([
-            'message' => 'Funcionando'
-        ],200);
-    }
-
     public function register(Request $request)
     {
         /* Validamos los datos que llegan desde la aplicación. Si algo falla 
@@ -26,7 +20,9 @@ class UserController extends Controller
             'date' => 'required|date', ]);
 
         // Si el usuario no ha rellenado el nombre, por defecto será 'Anónimo'.
-        if(empty($validatedData['name'])) {$validatedData['name'] = 'Anónimo';}
+        if(empty($validatedData['name'])) {
+            $validatedData['name'] = $this->creationAnonymousName();
+        }
 
         // Así guardamos la contraseña encriptada en la BD.
         $validatedData['password'] = Hash::make($request->password);
@@ -43,6 +39,23 @@ class UserController extends Controller
         /*Devolvemos a la aplicación usuaria de la API los datos del usuario y 
         el token de acceso temporal.*/
         return response([ 'user' => $user, 'access_token' => $accessToken]);
+    }
+
+    private function creationAnonymousName()
+    {
+        // Buscamos si ya existe el usuario 'Anónimo'.
+        $anonymousUser = User::where('name', 'Anónimo')->first();
+
+        // Si no existe, establecemos el nombre como 'Anónimo'.
+        if (!$anonymousUser) {
+            return 'Anónimo';
+        } else {
+            // Si ya existe, generamos un nombre único añadiendo un número.
+            //Vamos a contar cuantos usuarios 'Anónimo' existen
+            $anonymousCount = User::where('name', 'like', 'Anónimo%')->count();
+            //el operador like busca un patron común (Anónimo%, donde % es cualquier número de caracteres) 
+            return 'Anónimo' . ($anonymousCount + 1);
+        }
     }
     
     public function login(Request $request)
