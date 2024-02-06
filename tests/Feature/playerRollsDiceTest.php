@@ -7,7 +7,6 @@ use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Laravel\Passport\ClientRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Faker\Factory as Faker;
 use Illuminate\Http\Request;
