@@ -8,10 +8,10 @@ use Laravel\Passport\ClientRepository;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class LastPlayerTest extends TestCase
+class FirstPlayerTest extends TestCase
 {
     use RefreshDatabase;
-    public function testLastPlayer()
+    public function testFirstPlayer()
     {
         // Crear el cliente de acceso personalizado para la BD virtual (Passport)
         (new ClientRepository())->createPersonalAccessClient(
@@ -22,7 +22,7 @@ class LastPlayerTest extends TestCase
         $admin->assignRole('admin');
         $this->actingAs($admin);
 
-        $response = $this->get("/api/players/ranking/loser");
+        $response = $this->get("/api/players/ranking/winner");
         // Comprueba que la respuesta sea 200 (OK)    
         $this->assertEquals(200, $response->getStatusCode());
     }
