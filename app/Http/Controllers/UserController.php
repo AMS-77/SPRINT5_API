@@ -79,11 +79,15 @@ class UserController extends Controller
 
     public function logout(Request $request)
     {
-        // Se anula el token del usuario
-        $request->user()->token()->revoke();
-
-        // Devolvemos un aviso de que se ha cerrado la sesión.
-        return response(['message' => 'Logout successful']);
+        $token = $request->user()->token();
+        //miraremos si está autenticado
+        if ($token) 
+        {
+            $token->revoke();
+            return response()->json('Logout successful', 200);
+        } else {
+            return response()->json('Unauthenticated', 401);
+        }
     }
 
     public function update(Request $request, $id)
