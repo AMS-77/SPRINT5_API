@@ -13,7 +13,7 @@ class UpdateUserTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function testUpdate()
+    public function testUpdateUser()
     {
         // Crear el cliente de acceso personalizado para la BD virtual (Passport)
         (new ClientRepository())->createPersonalAccessClient(
