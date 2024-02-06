@@ -14,7 +14,7 @@ class UserController extends Controller
         /* Validamos los datos que llegan desde la aplicación. Si algo falla 
         el framework nos dará un error.*/
         $validatedData = $request->validate([
-            'name' => 'nullable|unique:users', // Si se rellena el campo 'name', debe ser único.
+            'name' => 'nullable|max:25|unique:users', // Si se rellena el campo 'name', debe ser único.
             'email' => 'required|email|unique:users',
             'password' => 'required', // Hacemos que la contraseña deba ser confirmada (campo password_confirmation).
             'date' => 'required|date', ]);
