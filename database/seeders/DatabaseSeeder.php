@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(UsersTableSeeder::class);
         User::factory(10)->create();
-        $this->call(RolesAndPermissionsSeeder::class);
+        $this->call(RolesTableSeeder::class);
         $this->call(GamesTableSeeder::class);
         Game::factory(10)->create();
     }

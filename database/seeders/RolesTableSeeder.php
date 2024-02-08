@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
-class RolesAndPermissionsSeeder extends Seeder
+class RolesTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -28,7 +28,6 @@ class RolesAndPermissionsSeeder extends Seeder
             ], [
                 'name' => 'admin',
                 'password' => bcrypt('admin'),
-                'date' => now()
             ]);
         }
 
