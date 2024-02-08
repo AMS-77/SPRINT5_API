@@ -29,7 +29,6 @@ class UserFactory extends Factory
             'name' => $this->faker->unique()->name,
             'email' => $this->faker->unique()->safeEmail,
             'password' => bcrypt('password'),
-            'date' => $this->faker->date,
             'percentage_won' => $this->faker->randomFloat(2, 0, 1) * 100,
         ];
     }

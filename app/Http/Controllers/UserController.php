@@ -11,53 +11,40 @@ class UserController extends Controller
 {
     public function register(Request $request)
     {
-        /* Validamos los datos que llegan desde la aplicación. Si algo falla 
-        el framework nos dará un error.*/
         $validatedData = $request->validate([
-            'name' => 'nullable|max:25|unique:users', // Si se rellena el campo 'name', debe ser único.
+            'name' => 'nullable|max:25', 
             'email' => 'required|email|unique:users',
-            'password' => 'required', // Hacemos que la contraseña deba ser confirmada (campo password_confirmation).
-            'date' => 'required|date', ]);
+            'password' => 'required|min:8|confirmed|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
+            // Requisitos contraseña: al menos una letra minúscula, una letra mayúscula, un número, un carácter especial y longitud mínima de 8 caracteres.
+        ],
+        [
+            'password.required' => 'El campo de contraseña es obligatorio.',
+            'password.min' => 'La contraseña debe tener al menos :min caracteres.',
+            'password.regex' => 'La contraseña debe tener al menos una letra minúscula,una letra mayúscula, un número y un carácter especial (!@#$%^&*).',
+            'password.confirmed' => 'La contraseña no coincide.',
+        ]);
 
-        // Si el usuario no ha rellenado el nombre, por defecto será 'Anónimo'.
         if(empty($validatedData['name'])) {
-            $validatedData['name'] = $this->creationAnonymousName();
+            $validatedData['name'] = 'Anonymous';
+        } else {
+            // Verificamos si el nombre ya existe en la base de datos (ignorando 'Anonymous')
+            $existingUser = User::where('name', $validatedData['name'])->where('name', '<>', 'Anonymous')->first();
+            if($existingUser) {
+                return response()->json(['error' => 'The name existings.'], 400);
+            }
         }
 
-        // Así guardamos la contraseña encriptada en la BD.
         $validatedData['password'] = Hash::make($request->password);
 
-        // Creamos el nuevo usuario en la BD y hacemos una instancia del usuario.
         $user = User::create($validatedData);
 
-        // Cualquier usuario automaticamente pasa a tener el rol de jugador
         $user->assignRole('player');
 
-        // Laravel Passport nos genera un nuevo token de acceso para el usuario.
         $accessToken = $user->createToken('authToken')->accessToken;
 
-        /*Devolvemos a la aplicación usuaria de la API los datos del usuario y 
-        el token de acceso temporal.*/
         return response([ 'user' => $user, 'access_token' => $accessToken]);
     }
 
-    private function creationAnonymousName()
-    {
-        // Buscamos si ya existe el usuario 'Anónimo'.
-        $anonymousUser = User::where('name', 'Anónimo')->first();
-
-        // Si no existe, establecemos el nombre como 'Anónimo'.
-        if (!$anonymousUser) {
-            return 'Anónimo';
-        } else {
-            // Si ya existe, generamos un nombre único añadiendo un número.
-            //Vamos a contar cuantos usuarios 'Anónimo' existen
-            $anonymousCount = User::where('name', 'like', 'Anónimo%')->count();
-            //el operador like busca un patron común (Anónimo%, donde % es cualquier número de caracteres) 
-            return 'Anónimo' . ($anonymousCount + 1);
-        }
-    }
-    
     public function login(Request $request)
     {
         $request->validate([
@@ -80,7 +67,7 @@ class UserController extends Controller
     public function logout(Request $request)
     {
         $token = $request->user()->token();
-        //miraremos si está autenticado
+        
         if ($token) 
         {
             $token->revoke();
@@ -93,13 +80,11 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
 
-        $current_user = Auth::user()->id; // Obtenemos el usuario actual._
+        $current_user = Auth::user()->id; // Obtenemos el usuario actual.
 
         // Buscamos al usuario en la base de datos, haciendo la petición al Modelo
         $user = User::find($id);
 
-
-        // Si no existe, devolvemos  error
         if (!$user) {
             return response(['message' => 'User not found'], 404);
         }
@@ -123,21 +108,16 @@ class UserController extends Controller
     //Método para obtener el ranking con todos los jugadores, % en orden descendente
     public function playersExitPercentage()
     {
-        // Listamos todos los jugadores 
         $gamers_ranking = User::orderBy('percentage_won', 'desc')->get();
 
-        // Devolvemos el ranking de jugadores
         return response(['gamers_ranking' => $gamers_ranking]);
     }
 
-    //Método para tener la media del % de éxito sobre todos los jugadores
-    public function playersRanking()
+    //Método para tener el listado de jugadores
+    public function showPlayers()
     {
-        // Calculamos la media del % de éxito y redondeamos a 2 decimales
-        $mediaSuccess = round ((User::average('percentage_won')),2);
-
-        // Damos la media como respuesta
-        return response(['media success' => $mediaSuccess]);
+        $gamers_list = User::orderBy('name', 'asc')->get();
+        return response(['gamers_list' => $gamers_list]);
     }
 
     public function lastPlayer()
@@ -145,21 +125,15 @@ class UserController extends Controller
         // Obtenemos el menor % de éxito y al o a los jugadores con ese porcentaje
         $lastPlayers = User::where('percentage_won', User::min('percentage_won'))->get();
 
-        // Devolvemos el peor o peores jugadores
         return response(['worst_players' => $lastPlayers]);
     }
 
     public function firstPlayer()
     {
-        // Obtenemos el mayor % de éxito y al o a los jugadores con ese porcentaje
         $firstPlayers = User::where('percentage_won', User::max('percentage_won'))->get();
 
-        // Devolvemos el mejor o mejores jugadores
         return response(['worst_players' => $firstPlayers]);
     }
-
-
-
 }
 
 

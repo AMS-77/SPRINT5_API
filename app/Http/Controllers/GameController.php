@@ -5,89 +5,86 @@ namespace App\Http\Controllers;
 use App\Models\Game;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Auth;                                              
 
 class GameController extends Controller
 { 
-    //Un jugador tirará los dados
+
+    // Verificar permisos de usuario
+    private function authenticationUser($id)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response(['message' => 'Not authorized'], 401);
+        }
+
+        if ($user->id != $id) {
+            return response(['message' => 'Not permitted'], 403);
+        }
+
+        return null; 
+    }
+
     public function playerRollsDice(Request $request, $id)
     {
-        //Verificamos que el usuario actual está autenticado
-        $user=Auth::user();
-        if (!$user) {
-            return response(['message' => 'not authorized'], 401);
+        $permissionError = $this->authenticationUser($id);
+        if ($permissionError) {
+            return $permissionError;
         }
 
-        //comparamos el ID del usuario autenticado ($user->id) con el ID puesto en la URL ($id).
-        if ($user->id != $id) {
-            return response(['message' => 'not permitted'], 401);
-        }
+        $dice1 = rand(1, 6);
+        $dice2 = rand(1, 6);
+        $gameWon = ($dice1 + $dice2 == 7);
 
-        // Validamos que tengamos los 2 dados.
-        if (!isset($request->dice1) || !isset($request->dice2)) {
-            return response(['message' => 'The 2 dices are required'], 400);
-        }  
-
-        //Tiradas de dados y calculamos si gana o pierde
-        $dice1 = rand(1,6);
-        $dice2 = rand(1,6);
-        $game_won  = ($dice1 + $dice2 == 7);
-
-        // Guardamos la tirada en la BD
         Game::create([
-            'user_id' => $user->id,
+            'user_id' => $id,
             'dice1' => $dice1,
             'dice2' => $dice2,
-            'game_won' => $game_won,
+            'game_won' => $gameWon,
         ]);
-
-        // Devolvemos el juego como respuesta
+    
         return response([
             'dice1' => $dice1,
             'dice2' => $dice2,
-            'game_won' => $game_won,
+            'game_won' => $gameWon,
         ], 201);
     }
 
-    //Un jugador elimina todas sus tiradas
-    public function EliminatePlayerRolls($id)
+    public function eliminatePlayerRolls($id)
     {
-        // Verificamos que el usuario actual esté autenticado
-        $user = Auth::user();
-        if (!$user) {
-            return response(['message' => 'not authorized'], 401);
+        $permissionError = $this->authenticationUser($id);
+        if ($permissionError) {
+            return $permissionError;
         }
 
-        //comparamos el ID del usuario autenticado ($user->id) con el ID puesto en la URL ($id).
-        if ($user->id != $id) {
-            return response(['message' => 'not permitted'], 401);
+        Game::where('user_id', $id)->delete();
+
+        // Actualizar el porcentaje de victorias a cero
+        $user = User::find($id);
+        if ($user) {
+            $user->percentage_won = 0;
+            $user->save();
+        } else {
+            return response(['message' => 'User not found'], 404);
         }
 
-        // Eliminamos todas las tiradas  
-        Game::where('user_id', $user->id)->delete();
-
-        // Devolvemos un mensaje de confirmación
-        return response(['message' => 'all games deleted']);
+        return response(['message' => 'All games deleted']);
     }
 
-    //Listar las tiradas de 1 jugador
     public function listPlaysPlayer($id)
     {
-        // Verificamos que el usuario actual esté autenticado
-        $user = Auth::user();
-        if (!$user) {
-            return response(['message' => 'not authorized'], 401);
+        $permissionError = $this->authenticationUser($id);
+        if ($permissionError) {
+            return $permissionError;
         }
 
-        //comparamos el ID del usuario autenticado ($user->id) con el ID puesto en la URL ($id).
-        if ($user->id != $id) {
-            return response(['message' => 'not permitted'], 401);
-        }
+        // Obtener todas las tiradas del usuario
+        $games = Game::where('user_id', $id)->get();
 
-        // Obtenemos todos los juegos del usuario
-        $games = $user->games;
-
-        // Devolvemos los juegos como respuesta
         return response(['games' => $games]);
     }
 }
+
+
+
+

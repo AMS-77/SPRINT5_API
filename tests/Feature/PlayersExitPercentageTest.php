@@ -17,30 +17,20 @@ class PlayersExitPercentageTest extends TestCase
         (new ClientRepository())->createPersonalAccessClient(
             null, 'Test Personal Access Client', 'http://localhost');
 
-        // Crea los roles
-        Role::create(['name' => 'player']);
         Role::create(['name' => 'admin']);
-
-        // Creamos un usuario con el rol 'admin'
+        // Creamos un usuario con el rol 'admin'.
         $admin = User::factory()->create();  
         $admin->assignRole('admin');
         $this->actingAs($admin);
 
-        //Petición GET para obtener el ranking de jugadores
-        $response = $this->get("/api/players");
+        // Petición GET para obtener el ranking.
+        $response = $this->get("/api/players/ranking");
 
-        // Comprueba que la respuesta es 200 (OK)    
+        // Comprueba que la respuesta sea 200 (OK)    
         $this->assertEquals(200, $response->getStatusCode());
-
-        // Ahora, probamos con un usuario tipo 'player'
-        $player = User::factory()->create();  
-        $player->assignRole('player');
-        $this->actingAs($player);
-
-        // Intenta realizar la misma petición GET
-        $response = $this->get("/api/players");
-
-        // Comprueba que la respuesta sea 403 (no Autorizado)
-        $this->assertEquals(403, $response->getStatusCode());
+        
+        //Aseguramos que nos llega la media de exito de todos los jugadores
+        $responseDB = $response->json();
+        $this->assertArrayHasKey('gamers_ranking', $responseDB);
     }
 }

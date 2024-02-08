@@ -21,14 +21,13 @@ class RegisterTest extends TestCase
         $userData = [
             'name' => $user->name,  //metemos el mismo nombre que el usuario de prueba
             'email' => 'email_failed',  //formato email incorrecto
-            'date' => '2024',  //Fecha inválida.
         ];
 
         $response = $this->json('POST', '/api/players', $userData);
 
         //Esperaremos recibir un error 422 que indica que los 3 datos son inválidos
         $response->assertStatus(422)
-                ->assertJsonValidationErrors(['name', 'email', 'date']);
+                ->assertJsonValidationErrors([ 'email']);
         
     }
 

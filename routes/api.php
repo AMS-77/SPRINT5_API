@@ -29,8 +29,8 @@ Route::middleware('auth:api')->group(function () {   //Laravel/Passport
 
     Route::middleware('role:admin')->group(function () {   //Spatie/Permissions
 
-        Route::get('/players', [UserController::class, 'playersExitPercentage'])->name('players.playersExitPercentage');
-        Route::get('/players/ranking', [UserController::class, 'playersRanking'])->name('players.playersRanking');
+        Route::get('/players', [UserController::class, 'showPlayers'])->name('players.showPlayers');
+        Route::get('/players/ranking', [UserController::class, 'playersExitPercentage'])->name('players.playersExitPercentage');
         Route::get('/players/ranking/loser', [UserController::class, 'lastPlayer'])->name('players.lastPlayer');
         Route::get('/players/ranking/winner', [UserController::class, 'firstPlayer'])->name('players.firstPlayer');
     });
